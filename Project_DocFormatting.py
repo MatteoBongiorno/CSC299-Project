@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 def get_user_input():
     """Get citation information from the user."""
     author = input("Enter the author's name (Last, First): ")
@@ -96,3 +97,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+=======
+print("Hello World")
+>>>>>>> 637225f6574357aa39e262e854834b4c9cd4dfb5
