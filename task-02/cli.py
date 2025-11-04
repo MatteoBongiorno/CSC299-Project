@@ -16,7 +16,7 @@ def print_help():
 {Config.APP_NAME} v{Config.APP_VERSION} - Available Commands:
 ======================================
 BASIC COMMANDS:
-  add <description> [priority] [#tags]  - Add a new task
+  add <description> [priority] [#tags]  - Add a new task (priority: low/medium/high)
   list                                  - List all pending tasks
   list all                              - List all tasks including completed
   search <keyword>                      - Search tasks by keyword
