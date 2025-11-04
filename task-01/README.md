@@ -92,8 +92,11 @@ Each task contains:
 ## Project Structure
 
 ```
-task-manager/
-├── task_manager.py    # Main application file
-├── tasks.json         # Auto-generated task storage
-└── README.md          # This file
+tasks-01/
+├── cli.py              # Command-line interface (main program)
+├── task_manager.py     # TaskManager class (business logic)
+├── utils.py            # Utility functions for formatting and validation
+├── config.py           # Configuration settings
+├── tasks.json          # Auto-generated task storage
+└── README.md           # This file
 ```
