@@ -52,7 +52,7 @@ def main():
     """Main function to demonstrate task summarization"""
     
     # Sample paragraph-length task descriptions
-    task_descriptions = [
+    sample_descriptions = [
         """I need to prepare a comprehensive presentation for the upcoming quarterly 
         business review meeting. This involves gathering all the sales data from the 
         past three months, creating visualizations and charts to show trends, writing 
@@ -84,13 +84,39 @@ def main():
     print("=" * 50)
     print()
     
-    # Summarize each task description
-    for i, description in enumerate(task_descriptions, 1):
-        print(f"Task {i}:")
+    # First, summarize sample descriptions
+    print("Sample Task Summaries:")
+    print()
+    
+    for i, description in enumerate(sample_descriptions, 1):
+        print(f"Sample Task {i}:")
         print(f"Original: {description[:100]}...")  # Show first 100 chars
         print(f"Summarizing...")
         
         summary = summarize_task(description)
+        print(f"Summary: {summary}")
+        print("-" * 50)
+        print()
+    
+    # Now allow user input
+    print("\nNow you can enter your own task descriptions!")
+    print("=" * 50)
+    print()
+    
+    while True:
+        print("Enter a paragraph-length task description (or 'quit' to exit):")
+        user_input = input("> ").strip()
+        
+        if user_input.lower() in ['quit', 'exit', 'q']:
+            print("\nThank you for using Task Summarizer!")
+            break
+        
+        if not user_input:
+            print("Please enter a task description.\n")
+            continue
+        
+        print("\nSummarizing your task...")
+        summary = summarize_task(user_input)
         print(f"Summary: {summary}")
         print("-" * 50)
         print()
