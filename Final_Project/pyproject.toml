@@ -10,11 +10,16 @@ requires-python = ">=3.13"
 dependencies = [
     "openai>=2.8.1",
     "python-dotenv>=1.0.0",
+    "colorama>=0.4.6",
 ]
 
 [project.scripts]
 task-final = "task_final:main"
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["task_final*"]
+
 [build-system]
-requires = ["uv_build>=0.9.7,<0.10.0"]
-build-backend = "uv_build"
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
