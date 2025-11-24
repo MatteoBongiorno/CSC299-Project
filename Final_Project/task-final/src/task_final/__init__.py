@@ -1,7 +1,7 @@
 """Task Manager - A simple task management application."""
 
-from task_05.models import Task, TaskCollection
-from task_05.cli import TaskManagerCLI
+from task_final.models import Task, TaskCollection
+from task_final.cli import TaskManagerCLI
 
 __version__ = "1.0.0"
 __all__ = ["Task", "TaskCollection", "TaskManagerCLI"]

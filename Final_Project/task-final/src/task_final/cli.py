@@ -2,8 +2,9 @@
 Command-line interface for the Task Manager.
 """
 from datetime import datetime
-from task_05.models import Task, TaskCollection
-from task_05.utils import prompt_valid_deadline, prompt_valid_priority, prompt_tags, parse_date
+from task_final.models import Task, TaskCollection
+from task_final.utils import prompt_valid_deadline, prompt_valid_priority, prompt_tags, parse_date
+from task_final.summarizer import summarize_task
 
 
 class TaskManagerCLI:

@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from datetime import datetime, timedelta
-from task_05.models import Task, TaskCollection
+from task_final.models import Task, TaskCollection
 
 def demo():
     """Run a demo of the task manager functionality."""

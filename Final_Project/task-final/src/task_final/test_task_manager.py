@@ -3,7 +3,7 @@ Unit tests for the Task Manager application.
 """
 import pytest
 from datetime import datetime, timedelta
-from task_05.models import Task, TaskCollection
+from task_final.models import Task, TaskCollection
 
 
 class TestTask:
