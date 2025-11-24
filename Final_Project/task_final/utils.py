@@ -10,8 +10,8 @@ init(autoreset=True)
 
 
 def validate_priority(priority: str) -> bool:
-    """Check if priority is valid."""
-    return priority in ["Low", "Medium", "High"]
+    """Check if priority is valid (case-insensitive)."""
+    return priority.lower() in ["low", "medium", "high"]
 
 
 def parse_date(date_str: str) -> Optional[datetime]:
@@ -65,7 +65,7 @@ def prompt_valid_deadline() -> datetime:
 
 def prompt_valid_priority() -> str:
     """
-    Prompt user for a valid priority level with color-coded options.
+    Prompt user for a valid priority level with color-coded options (case-insensitive).
 
     Returns:
         Valid priority string (Low, Medium, High)
@@ -76,7 +76,7 @@ def prompt_valid_priority() -> str:
         print(f"  {Fore.YELLOW}Medium{Style.RESET_ALL} - Medium priority")
         print(f"  {Fore.RED}High{Style.RESET_ALL} - High priority")
         
-        priority = input(f"{Fore.CYAN}Enter priority (Low/Medium/High): {Style.RESET_ALL}").strip()
+        priority = input(f"{Fore.CYAN}Enter priority (Low/Medium/High): {Style.RESET_ALL}").strip().capitalize()
         if validate_priority(priority):
             priority_color = {"Low": Fore.GREEN, "Medium": Fore.YELLOW, "High": Fore.RED}
             print(f"Priority set to: {priority_color[priority]}{priority}{Style.RESET_ALL}")
@@ -97,3 +97,24 @@ def prompt_tags() -> list:
     if not tags_input:
         return []
     return [tag.strip() for tag in tags_input.split(",") if tag.strip()]
+
+
+def center_text(text: str, width: int = 60) -> str:
+    """
+    Center text within a given width, accounting for ANSI color codes.
+
+    Args:
+        text: Text to center (may contain ANSI codes)
+        width: Total width for centering
+
+    Returns:
+        Centered text string
+    """
+    import re
+    # Remove ANSI codes to calculate actual visible width
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    visible_text = ansi_escape.sub('', text)
+    
+    # Calculate padding needed
+    padding = (width - len(visible_text)) // 2
+    return " " * padding + text

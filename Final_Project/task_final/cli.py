@@ -4,7 +4,13 @@ Command-line interface for the Task Manager.
 from datetime import datetime
 from colorama import Fore, Style, init
 from task_final.models import Task, TaskCollection
-from task_final.utils import prompt_valid_deadline, prompt_valid_priority, prompt_tags, parse_date
+from task_final.utils import (
+    prompt_valid_deadline,
+    prompt_valid_priority,
+    prompt_tags,
+    parse_date,
+    center_text,
+)
 from task_final.summarizer import summarize_task
 
 # Initialize colorama for cross-platform color support
@@ -22,6 +28,7 @@ HEADER_COLOR = Fore.CYAN
 SUCCESS_COLOR = Fore.MAGENTA
 ERROR_COLOR = Fore.RED
 INFO_COLOR = Fore.BLUE
+MENU_WIDTH = 60
 
 
 class TaskManagerCLI:
@@ -59,18 +66,18 @@ class TaskManagerCLI:
                 print(f"{ERROR_COLOR}Invalid choice. Please try again.{Style.RESET_ALL}")
 
     def display_menu(self) -> None:
-        """Display the main menu."""
-        print("\n" + "-" * 60)
-        print(f"{HEADER_COLOR}Main Menu{Style.RESET_ALL}")
-        print("-" * 60)
-        print("1. Create a new task")
-        print("2. View all tasks")
-        print("3. Search tasks")
-        print("4. Sort tasks")
-        print("5. Edit a task")
-        print("6. Delete a task")
-        print("7. Exit")
-        print("-" * 60)
+        """Display the main menu (centered)."""
+        print("\n" + "-" * MENU_WIDTH)
+        print(center_text(f"{HEADER_COLOR}Main Menu{Style.RESET_ALL}"))
+        print("-" * MENU_WIDTH)
+        print(center_text("1. Create a new task"))
+        print(center_text("2. View all tasks"))
+        print(center_text("3. Search tasks"))
+        print(center_text("4. Sort tasks"))
+        print(center_text("5. Edit a task"))
+        print(center_text("6. Delete a task"))
+        print(center_text("7. Exit"))
+        print("-" * MENU_WIDTH)
 
     def create_task(self) -> None:
         """Create a new task with user input."""
