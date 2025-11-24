@@ -2,8 +2,9 @@
 Utility functions for input validation and date handling.
 """
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from colorama import Fore, Style, init
+import readchar
 
 # Initialize colorama for cross-platform color support
 init(autoreset=True)
@@ -118,3 +119,74 @@ def center_text(text: str, width: int = 60) -> str:
     # Calculate padding needed
     padding = (width - len(visible_text)) // 2
     return " " * padding + text
+
+
+def select_task_interactive(tasks: List, task_name: str = "Task") -> Optional:
+    """
+    Allow user to select a task interactively using arrow keys.
+    
+    Args:
+        tasks: List of Task objects to select from
+        task_name: Name to display for the tasks (e.g., "Task", "Search Result")
+    
+    Returns:
+        Selected Task object or None if cancelled
+    """
+    if not tasks:
+        return None
+    
+    if len(tasks) == 1:
+        return tasks[0]
+    
+    selected_index = 0
+    
+    while True:
+        # Clear and display tasks with highlight
+        print("\033[2J\033[H")  # Clear screen
+        print(f"\n{Fore.CYAN}Select a {task_name} (use UP/DOWN arrows, press ENTER to select):{Style.RESET_ALL}\n")
+        
+        for i, task in enumerate(tasks):
+            if i == selected_index:
+                # Highlight selected task
+                print(f"{Fore.MAGENTA}>>> {i + 1}. {task}{Style.RESET_ALL}")
+            else:
+                priority_color = {
+                    "Low": Fore.GREEN,
+                    "Medium": Fore.YELLOW,
+                    "High": Fore.RED,
+                }.get(task.priority, "")
+                print(f"    {i + 1}. {priority_color}{task}{Style.RESET_ALL}")
+        
+        try:
+            # Read keyboard input
+            key = readchar.readchar()
+            
+            # Arrow keys (in Windows)
+            if key == '\x00':  # Extended key indicator
+                next_key = readchar.readchar()
+                if next_key == 'H':  # Up arrow
+                    selected_index = (selected_index - 1) % len(tasks)
+                elif next_key == 'P':  # Down arrow
+                    selected_index = (selected_index + 1) % len(tasks)
+            elif key == '\r':  # Enter key
+                return tasks[selected_index]
+            elif key.lower() == 'q':  # Quit/Cancel
+                return None
+        except Exception as e:
+            # Fallback for non-Windows systems
+            try:
+                import sys
+                if sys.platform != 'win32':
+                    # For Unix-like systems, try to read escape sequences
+                    if key == '\x1b':  # Escape key
+                        next_key = readchar.readchar()
+                        if next_key == '[':
+                            direction = readchar.readchar()
+                            if direction == 'A':  # Up arrow
+                                selected_index = (selected_index - 1) % len(tasks)
+                            elif direction == 'B':  # Down arrow
+                                selected_index = (selected_index + 1) % len(tasks)
+                    elif key == '\r':  # Enter key
+                        return tasks[selected_index]
+            except:
+                pass

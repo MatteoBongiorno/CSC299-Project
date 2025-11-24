@@ -10,6 +10,7 @@ from task_final.utils import (
     prompt_tags,
     parse_date,
     center_text,
+    select_task_interactive,
 )
 from task_final.summarizer import summarize_task
 
@@ -536,30 +537,47 @@ if __name__ == "__main__":
         if len(results) == 1:
             return results[0], True
         
-        # Multiple tasks with same name - show them and ask for ID
-        print(f"\nFound {len(results)} task(s) with name '{task_name}':")
-        for i, task in enumerate(results, 1):
-            print(f"\n{i}. {task}")
-        
-        task_id = input("\nEnter the full task ID to select: ").strip()
-        task = self.collection.get_task_by_id(task_id)
-        
-        if not task:
-            print(f"Task with ID '{task_id}' not found.")
-            return None, False
-        
-        return task, True
+        # Multiple tasks with same name - use interactive selection
+        task = select_task_interactive(results, "task")
+        return task, task is not None
 
-    def edit_task(self) -> None:
-        """Edit an existing task by name."""
-        print("\n--- Edit Task ---")
-        task, found = self.find_task_by_name()
+    def show_task_action_menu(self, task: Task) -> None:
+        """Display action menu for a selected task.
         
-        if not found:
-            return
+        Args:
+            task: The Task object to perform actions on
+        """
+        while True:
+            print(f"\n{HEADER_COLOR}Task Actions:{Style.RESET_ALL}")
+            priority_color = PRIORITY_COLORS.get(task.priority, "")
+            print(f"\nSelected: {priority_color}{task}{Style.RESET_ALL}")
+            print("\nWhat would you like to do?")
+            print("1. Edit task")
+            print("2. Delete task")
+            print("3. View details")
+            print("4. Back to menu")
 
-        print(f"\nCurrent task: {task}")
-        print("\nWhat would you like to edit?")
+            choice = input("Enter choice (1-4): ").strip()
+
+            if choice == "1":
+                self.edit_single_task(task)
+            elif choice == "2":
+                self.delete_single_task(task)
+            elif choice == "3":
+                print(f"\n{priority_color}{task}{Style.RESET_ALL}")
+            elif choice == "4":
+                break
+            else:
+                print(f"{ERROR_COLOR}Invalid choice.{Style.RESET_ALL}")
+
+    def edit_single_task(self, task: Task) -> None:
+        """Edit a specific task.
+        
+        Args:
+            task: The Task object to edit
+        """
+        print(f"\n{HEADER_COLOR}Edit Task:{Style.RESET_ALL}")
+        print("What would you like to edit?")
         print("1. Name")
         print("2. Priority")
         print("3. Deadline")
@@ -572,40 +590,58 @@ if __name__ == "__main__":
             new_name = input("Enter new name: ").strip()
             if new_name:
                 task.name = new_name
-                print("[OK] Name updated.")
+                print(f"{SUCCESS_COLOR}[OK] Name updated.{Style.RESET_ALL}")
         elif choice == "2":
             task.priority = prompt_valid_priority()
-            print("[OK] Priority updated.")
+            print(f"{SUCCESS_COLOR}[OK] Priority updated.{Style.RESET_ALL}")
         elif choice == "3":
             task.deadline = prompt_valid_deadline()
-            print("[OK] Deadline updated.")
+            print(f"{SUCCESS_COLOR}[OK] Deadline updated.{Style.RESET_ALL}")
         elif choice == "4":
             task.tags = prompt_tags()
-            print("[OK] Tags updated.")
+            print(f"{SUCCESS_COLOR}[OK] Tags updated.{Style.RESET_ALL}")
         elif choice == "5":
             print("Edit cancelled.")
         else:
-            print("Invalid choice.")
+            print(f"{ERROR_COLOR}Invalid choice.{Style.RESET_ALL}")
 
-    def delete_task(self) -> None:
-        """Delete a task from the collection by name."""
-        print("\n--- Delete Task ---")
-        task, found = self.find_task_by_name()
+    def delete_single_task(self, task: Task) -> None:
+        """Delete a specific task.
         
-        if not found:
-            return
-
+        Args:
+            task: The Task object to delete
+        """
         confirmation = input(
             f"Are you sure you want to delete '{task.name}'? (yes/no): "
         ).strip().lower()
 
         if confirmation == "yes":
             if self.collection.remove_task(task.id):
-                print("[OK] Task deleted successfully.")
+                print(f"{SUCCESS_COLOR}[OK] Task deleted successfully.{Style.RESET_ALL}")
             else:
-                print(f"Failed to delete task.")
+                print(f"{ERROR_COLOR}Failed to delete task.{Style.RESET_ALL}")
         else:
             print("Delete cancelled.")
+
+    def edit_task(self) -> None:
+        """Edit an existing task by name."""
+        print(f"\n{HEADER_COLOR}--- Edit Task ---{Style.RESET_ALL}")
+        task, found = self.find_task_by_name()
+        
+        if not found:
+            return
+        
+        self.show_task_action_menu(task)
+
+    def delete_task(self) -> None:
+        """Delete a task from the collection by name."""
+        print(f"\n{HEADER_COLOR}--- Delete Task ---{Style.RESET_ALL}")
+        task, found = self.find_task_by_name()
+        
+        if not found:
+            return
+        
+        self.delete_single_task(task)
 
     def quit(self) -> None:
         """Exit the application."""
