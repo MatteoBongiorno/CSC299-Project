@@ -4,7 +4,8 @@ Utility functions for input validation and date handling.
 from datetime import datetime
 from typing import Optional, List
 from colorama import Fore, Style, init
-import readchar
+import sys
+import os
 
 # Initialize colorama for cross-platform color support
 init(autoreset=True)
@@ -123,7 +124,7 @@ def center_text(text: str, width: int = 60) -> str:
 
 def select_task_interactive(tasks: List, task_name: str = "Task") -> Optional:
     """
-    Allow user to select a task interactively using arrow keys.
+    Allow user to select a task interactively using number selection.
     
     Args:
         tasks: List of Task objects to select from
@@ -138,17 +139,71 @@ def select_task_interactive(tasks: List, task_name: str = "Task") -> Optional:
     if len(tasks) == 1:
         return tasks[0]
     
-    selected_index = 0
+    # Display tasks with numbers
+    print(f"\n{Fore.CYAN}Select a {task_name}:{Style.RESET_ALL}\n")
+    
+    for i, task in enumerate(tasks):
+        priority_color = {
+            "Low": Fore.GREEN,
+            "Medium": Fore.YELLOW,
+            "High": Fore.RED,
+        }.get(task.priority, "")
+        print(f"{i + 1}. {priority_color}{task}{Style.RESET_ALL}")
+    
+    print(f"\n{Fore.CYAN}Enter the number of the task to select (1-{len(tasks)}) or 'q' to cancel:{Style.RESET_ALL}")
     
     while True:
-        # Clear and display tasks with highlight
-        print("\033[2J\033[H")  # Clear screen
-        print(f"\n{Fore.CYAN}Select a {task_name} (use UP/DOWN arrows, press ENTER to select):{Style.RESET_ALL}\n")
+        selection = input("Your choice: ").strip().lower()
         
+        if selection == 'q':
+            return None
+        
+        try:
+            index = int(selection) - 1
+            if 0 <= index < len(tasks):
+                return tasks[index]
+            else:
+                print(f"{Fore.RED}Invalid selection. Please enter a number between 1 and {len(tasks)}.{Style.RESET_ALL}")
+        except ValueError:
+            print(f"{Fore.RED}Invalid input. Please enter a number or 'q' to cancel.{Style.RESET_ALL}")
+
+
+def _select_task_arrows(tasks: List, task_name: str) -> Optional:
+    """
+    Windows-specific arrow key selection using msvcrt.
+    
+    Args:
+        tasks: List of Task objects to select from
+        task_name: Name to display for the tasks
+    
+    Returns:
+        Selected Task object or None if cancelled
+    """
+    try:
+        import msvcrt
+    except ImportError:
+        return _select_task_numbers(tasks, task_name)
+    
+    selected_index = 0
+    
+    print(f"\n{Fore.CYAN}Use UP/DOWN arrow keys to navigate, ENTER to select, Q to cancel:{Style.RESET_ALL}\n")
+    
+    while True:
+        # Clear previous output
+        os.system('cls' if os.name == 'nt' else 'clear')
+        
+        print(f"\n{Fore.CYAN}Select a {task_name} (UP/DOWN arrows, ENTER to select):{Style.RESET_ALL}\n")
+        
+        # Display all tasks
         for i, task in enumerate(tasks):
             if i == selected_index:
                 # Highlight selected task
-                print(f"{Fore.MAGENTA}>>> {i + 1}. {task}{Style.RESET_ALL}")
+                priority_color = {
+                    "Low": Fore.GREEN,
+                    "Medium": Fore.YELLOW,
+                    "High": Fore.RED,
+                }.get(task.priority, "")
+                print(f"{Fore.MAGENTA}>>> {i + 1}. {priority_color}{task}{Style.RESET_ALL}")
             else:
                 priority_color = {
                     "Low": Fore.GREEN,
@@ -157,36 +212,60 @@ def select_task_interactive(tasks: List, task_name: str = "Task") -> Optional:
                 }.get(task.priority, "")
                 print(f"    {i + 1}. {priority_color}{task}{Style.RESET_ALL}")
         
-        try:
-            # Read keyboard input
-            key = readchar.readchar()
+        print(f"\n{Fore.CYAN}[Selection: {selected_index + 1}/{len(tasks)}]{Style.RESET_ALL}")
+        
+        # Get keyboard input
+        if msvcrt.kbhit():
+            key = msvcrt.getch()
             
-            # Arrow keys (in Windows)
-            if key == '\x00':  # Extended key indicator
-                next_key = readchar.readchar()
-                if next_key == 'H':  # Up arrow
+            # Check for escape sequence (arrow keys)
+            if key == b'\xe0':  # Arrow key prefix
+                direction = msvcrt.getch()
+                if direction == b'H':  # Up arrow
                     selected_index = (selected_index - 1) % len(tasks)
-                elif next_key == 'P':  # Down arrow
+                elif direction == b'P':  # Down arrow
                     selected_index = (selected_index + 1) % len(tasks)
-            elif key == '\r':  # Enter key
+            elif key == b'\r':  # Enter
                 return tasks[selected_index]
-            elif key.lower() == 'q':  # Quit/Cancel
+            elif key.lower() == b'q':  # Quit
                 return None
-        except Exception as e:
-            # Fallback for non-Windows systems
-            try:
-                import sys
-                if sys.platform != 'win32':
-                    # For Unix-like systems, try to read escape sequences
-                    if key == '\x1b':  # Escape key
-                        next_key = readchar.readchar()
-                        if next_key == '[':
-                            direction = readchar.readchar()
-                            if direction == 'A':  # Up arrow
-                                selected_index = (selected_index - 1) % len(tasks)
-                            elif direction == 'B':  # Down arrow
-                                selected_index = (selected_index + 1) % len(tasks)
-                    elif key == '\r':  # Enter key
-                        return tasks[selected_index]
-            except:
-                pass
+
+
+def _select_task_numbers(tasks: List, task_name: str) -> Optional:
+    """
+    Fallback number-based selection for all platforms.
+    
+    Args:
+        tasks: List of Task objects to select from
+        task_name: Name to display for the tasks
+    
+    Returns:
+        Selected Task object or None if cancelled
+    """
+    # Display tasks with numbers
+    print(f"\n{Fore.CYAN}Select a {task_name}:{Style.RESET_ALL}\n")
+    
+    for i, task in enumerate(tasks):
+        priority_color = {
+            "Low": Fore.GREEN,
+            "Medium": Fore.YELLOW,
+            "High": Fore.RED,
+        }.get(task.priority, "")
+        print(f"{i + 1}. {priority_color}{task}{Style.RESET_ALL}")
+    
+    print(f"\n{Fore.CYAN}Enter the number of the task to select (1-{len(tasks)}) or 'q' to cancel:{Style.RESET_ALL}")
+    
+    while True:
+        selection = input("Your choice: ").strip().lower()
+        
+        if selection == 'q':
+            return None
+        
+        try:
+            index = int(selection) - 1
+            if 0 <= index < len(tasks):
+                return tasks[index]
+            else:
+                print(f"{Fore.RED}Invalid selection. Please enter a number between 1 and {len(tasks)}.{Style.RESET_ALL}")
+        except ValueError:
+            print(f"{Fore.RED}Invalid input. Please enter a number or 'q' to cancel.{Style.RESET_ALL}")
