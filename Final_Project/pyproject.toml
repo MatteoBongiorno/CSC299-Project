@@ -1,0 +1,20 @@
+[project]
+name = "task-final"
+version = "0.1.0"
+description = "Task Manager - AI-powered task summarization with OpenAI integration"
+readme = "README.md"
+authors = [
+    { name = "Matteo Bongiorno", email = "pot8toking@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "openai>=2.8.1",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+task-final = "task_final:main"
+
+[build-system]
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
