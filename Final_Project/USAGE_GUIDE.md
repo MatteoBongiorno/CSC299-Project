@@ -17,7 +17,7 @@
 
 ### Step 1: Navigate to Project Directory
 ```bash
-cd c:\Users\potat\CSC299-task-05\task-05
+cd c:\Users\potat\CSC299-Project\Final_Project
 ```
 
 ### Step 2: Activate Virtual Environment (if not already active)
@@ -31,8 +31,15 @@ source .venv/bin/activate
 
 ### Step 3: Install Dependencies
 ```bash
-pip install pytest
+pip install pytest colorama openai python-dotenv
 ```
+
+### Step 4: Set up OpenAI API Key (Optional, for task summarization)
+```bash
+# Create a .env file in the project directory with:
+OPENAI_API_KEY=your_api_key_here
+```
+Get your API key from: https://platform.openai.com/api-keys
 
 ---
 
@@ -40,22 +47,22 @@ pip install pytest
 
 ### Option 1: Run Interactive CLI (Recommended)
 ```bash
-python -m task_05
+python -m task_final
 ```
 
 ### Option 2: Run via __main__.py
 ```bash
-python src/task_05/__main__.py
+python task_final/__main__.py
 ```
 
 ### Option 3: Run Demo (Non-interactive)
 ```bash
-python src/task_05/demo.py
+python task_final/demo.py
 ```
 
 ### Option 4: Run Tests
 ```bash
-pytest src/task_05/test_task_manager.py -v
+python -m pytest task_final/test_task_manager.py -v
 ```
 
 ---
@@ -73,7 +80,8 @@ Main Menu
 4. Sort tasks
 5. Edit a task
 6. Delete a task
-7. Exit
+7. Summarize a task
+8. Exit
 ```
 
 ---

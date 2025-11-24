@@ -8,34 +8,34 @@ A simple, interactive command-line task management application that helps you or
 ✅ **Store & Persist** - Tasks are stored in an in-memory collection  
 ✅ **Search** - Find tasks by name, priority, deadline, or tags (with partial/full matching)  
 ✅ **Sort** - Organize tasks by name, priority, or deadline  
-✅ **Edit** - Modify existing task details  
-✅ **Delete** - Remove completed or obsolete tasks  
-✅ **View** - Display all tasks in a readable format  
+✅ **Edit** - Modify existing task details by task name with smart duplicate handling  
+✅ **Delete** - Remove completed or obsolete tasks by task name  
+✅ **View** - Display all tasks in a readable format with color-coded priorities  
+✅ **Summarize** - Use OpenAI GPT-4o-mini to summarize task descriptions  
 ✅ **Past Date Validation** - Rejects past deadlines and prompts for future dates  
+✅ **Color Coding** - Green (Low), Yellow (Medium), Red (High) priority indicators  
+✅ **Case-Insensitive Input** - Priority and task names are case-insensitive  
+✅ **Centered Menu** - Professional centered alignment for all menu options  
 
 ## Project Structure
 
 ```
-task-05/
-├── src/task_05/
-│   ├── __init__.py          # Package initialization & main entry point
-│   ├── __main__.py          # CLI launcher
-│   ├── models.py            # Task & TaskCollection models
-│   ├── utils.py             # Utility functions (validation, parsing, prompts)
-│   ├── cli.py               # Interactive CLI interface
-│   └── test_task_manager.py # Comprehensive unit tests (26 tests)
-├── specs/
-│   └── 001-task-manager/
-│       └── spec.md          # Feature specification
-├── pyproject.toml           # Project configuration
-└── README.md                # This file
+task_final/
+├── __init__.py          # Package initialization & main entry point
+├── __main__.py          # CLI launcher
+├── models.py            # Task & TaskCollection models (306 lines)
+├── utils.py             # Utility functions (165 lines): validation, parsing, colors
+├── cli.py               # Interactive CLI interface (686 lines)
+├── summarizer.py        # OpenAI GPT-4o-mini integration (45 lines)
+├── demo.py              # Non-interactive demonstration
+└── test_task_manager.py # Comprehensive unit tests (26 tests)
 ```
 
 ## Installation
 
 1. **Clone or navigate to the project directory:**
    ```bash
-   cd c:\Users\potat\CSC299-task-05\task-05
+   cd c:\Users\potat\CSC299-Project\Final_Project
    ```
 
 2. **Create and activate a virtual environment (if not already done):**
@@ -47,33 +47,41 @@ task-05/
 
 3. **Install dependencies:**
    ```bash
-   pip install pytest  # For running tests
+   pip install pytest colorama openai python-dotenv
    ```
+
+4. **Set up OpenAI API Key (for task summarization):**
+   ```bash
+   # Create a .env file in the project directory
+   echo OPENAI_API_KEY=your_api_key_here > .env
+   ```
+   Get your API key from: https://platform.openai.com/api-keys
 
 ## Usage
 
 ### Running the Interactive CLI
 
 ```bash
-python -m task_05
+python -m task_final
 ```
 
 Or:
 
 ```bash
-python src/task_05/__main__.py
+python task_final/__main__.py
 ```
 
 ### Main Menu Options
 
 ```
 1. Create a new task        - Add a new task to the collection
-2. View all tasks           - Display all tasks with details
+2. View all tasks           - Display all tasks with color-coded priorities
 3. Search tasks             - Find tasks by name, priority, deadline, or tags
 4. Sort tasks               - Organize tasks by name, priority, or deadline
-5. Edit a task              - Modify an existing task's attributes
-6. Delete a task            - Remove a task from the collection
-7. Exit                     - Quit the application
+5. Edit a task              - Modify an existing task's attributes (by name)
+6. Delete a task            - Remove a task from the collection (by name)
+7. Summarize a task         - Use OpenAI to summarize task descriptions
+8. Exit                     - Quit the application
 ```
 
 ### Creating a Task
@@ -170,7 +178,7 @@ Methods:
 Run the comprehensive test suite:
 
 ```bash
-pytest src/task_05/test_task_manager.py -v
+python -m pytest task_final/test_task_manager.py -v
 ```
 
 **Test Coverage:**
