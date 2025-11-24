@@ -124,7 +124,7 @@ def center_text(text: str, width: int = 60) -> str:
 
 def select_task_interactive(tasks: List, task_name: str = "Task") -> Optional:
     """
-    Allow user to select a task interactively using number selection.
+    Allow user to select a task interactively using arrow keys or number selection.
     
     Args:
         tasks: List of Task objects to select from
@@ -139,33 +139,101 @@ def select_task_interactive(tasks: List, task_name: str = "Task") -> Optional:
     if len(tasks) == 1:
         return tasks[0]
     
-    # Display tasks with numbers
-    print(f"\n{Fore.CYAN}Select a {task_name}:{Style.RESET_ALL}\n")
+    # Try to enable raw input mode for arrow keys
+    try:
+        import tty
+        import termios
+        return _select_task_arrows_unix(tasks, task_name)
+    except ImportError:
+        # Fallback to number selection on Windows
+        return _select_task_numbers(tasks, task_name)
+
+
+def _select_task_arrows_unix(tasks: List, task_name: str) -> Optional:
+    """
+    Arrow key selection for Unix-like terminals (Git Bash, Linux, macOS).
     
-    for i, task in enumerate(tasks):
-        priority_color = {
-            "Low": Fore.GREEN,
-            "Medium": Fore.YELLOW,
-            "High": Fore.RED,
-        }.get(task.priority, "")
-        print(f"{i + 1}. {priority_color}{task}{Style.RESET_ALL}")
+    Args:
+        tasks: List of Task objects to select from
+        task_name: Name to display for the tasks
     
-    print(f"\n{Fore.CYAN}Enter the number of the task to select (1-{len(tasks)}) or 'q' to cancel:{Style.RESET_ALL}")
+    Returns:
+        Selected Task object or None if cancelled
+    """
+    import tty
+    import termios
     
-    while True:
-        selection = input("Your choice: ").strip().lower()
+    selected_index = 0
+    
+    print(f"\n{Fore.CYAN}Use UP/DOWN arrow keys or 1-{len(tasks)} to navigate, ENTER to select, Q to cancel:{Style.RESET_ALL}\n")
+    
+    # Save terminal settings
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    
+    try:
+        # Set terminal to raw mode
+        tty.setraw(fd)
         
-        if selection == 'q':
-            return None
-        
-        try:
-            index = int(selection) - 1
-            if 0 <= index < len(tasks):
-                return tasks[index]
-            else:
-                print(f"{Fore.RED}Invalid selection. Please enter a number between 1 and {len(tasks)}.{Style.RESET_ALL}")
-        except ValueError:
-            print(f"{Fore.RED}Invalid input. Please enter a number or 'q' to cancel.{Style.RESET_ALL}")
+        while True:
+            # Move cursor to beginning and clear
+            sys.stdout.write(f"\r\033[2K")
+            sys.stdout.write(f"\n{Fore.CYAN}Select a {task_name}:{Style.RESET_ALL}\n")
+            
+            # Display all tasks
+            line_count = 0
+            for i, task in enumerate(tasks):
+                priority_color = {
+                    "Low": Fore.GREEN,
+                    "Medium": Fore.YELLOW,
+                    "High": Fore.RED,
+                }.get(task.priority, "")
+                
+                if i == selected_index:
+                    sys.stdout.write(f"{Fore.MAGENTA}>>> {i + 1}. {priority_color}{task}{Style.RESET_ALL}\n")
+                else:
+                    sys.stdout.write(f"    {i + 1}. {priority_color}{task}{Style.RESET_ALL}\n")
+                line_count += 1
+            
+            sys.stdout.write(f"\n{Fore.CYAN}[Selection: {selected_index + 1}/{len(tasks)}]{Style.RESET_ALL}\n")
+            sys.stdout.flush()
+            
+            # Read input character by character
+            char = sys.stdin.read(1)
+            
+            if char == '\r' or char == '\n':  # Enter
+                return tasks[selected_index]
+            elif char.lower() == 'q':  # Quit
+                return None
+            elif char.isdigit():  # Number input
+                digit = int(char)
+                if 1 <= digit <= len(tasks):
+                    selected_index = digit - 1
+                    # Clear previous lines
+                    sys.stdout.write(f"\033[{line_count + 4}A\033[J")
+                else:
+                    continue
+            elif char == '\x1b':  # Escape sequence
+                # Read the next two characters
+                try:
+                    next_char1 = sys.stdin.read(1)
+                    if next_char1 == '[':
+                        next_char2 = sys.stdin.read(1)
+                        if next_char2 == 'A':  # Up arrow
+                            selected_index = (selected_index - 1) % len(tasks)
+                            # Clear previous lines
+                            sys.stdout.write(f"\033[{line_count + 4}A\033[J")
+                        elif next_char2 == 'B':  # Down arrow
+                            selected_index = (selected_index + 1) % len(tasks)
+                            # Clear previous lines
+                            sys.stdout.write(f"\033[{line_count + 4}A\033[J")
+                except:
+                    pass
+    
+    finally:
+        # Restore terminal settings
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        print()  # New line after selection
 
 
 def _select_task_arrows(tasks: List, task_name: str) -> Optional:
